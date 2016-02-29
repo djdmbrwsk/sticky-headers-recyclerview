@@ -90,6 +90,10 @@ public class HeaderPositionCalculator {
     return position == firstItemPosition || headerId != nextItemHeaderId;
   }
 
+  public boolean isHeaderEligibleForShadow(RecyclerView parent, View item, View header, int orientation) {
+    return itemIsObscuredByHeader(parent, item, header, orientation) && !isStickyHeaderBeingPushedOffscreen(parent, header);
+  }
+
   private boolean indexOutOfBounds(int position) {
     return position < 0 || position >= mAdapter.getItemCount();
   }
