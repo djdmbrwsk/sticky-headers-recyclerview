@@ -1,6 +1,7 @@
 package com.timehop.stickyheadersrecyclerview;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.ViewGroup;
 
 public interface StickyRecyclerHeadersAdapter<VH extends RecyclerView.ViewHolder> {
@@ -31,6 +32,8 @@ public interface StickyRecyclerHeadersAdapter<VH extends RecyclerView.ViewHolder
    * @param position the adapter position
    */
   void onBindHeaderViewHolder(VH holder, int position);
+
+  void onDrawHeader(View header, boolean isSticky);
 
   /**
    * @return the number of views in the adapter

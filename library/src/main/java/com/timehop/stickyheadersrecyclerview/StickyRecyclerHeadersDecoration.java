@@ -121,23 +121,10 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
           mHeaderRects.put(position, headerOffset);
         }
         mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader);
-
-        // optionally draw header shadow when appropriate
-        if (mHeaderPositionCalculator.isHeaderEligibleForShadow(parent, itemView, header, orientation)) {
-          // HACK: need a better way for users to provide shadow drawing
-          android.graphics.drawable.GradientDrawable shadow = new android.graphics.drawable.GradientDrawable(
-            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-            new int[] {
-              android.graphics.Color.parseColor("#55000000"),
-              android.graphics.Color.parseColor("#00000000")
-            }
-          );
-          shadow.setBounds(headerOffset.left, headerOffset.bottom, headerOffset.right, headerOffset.bottom + 25);
-          shadow.draw(canvas);
-        }
-
-        // draw header
         mRenderer.drawHeader(parent, canvas, header, headerOffset);
+
+        boolean isSticky = mHeaderPositionCalculator.isHeaderSticky(parent, itemView, header, orientation);
+        mAdapter.onDrawHeader(header, isSticky);
       }
     }
   }
