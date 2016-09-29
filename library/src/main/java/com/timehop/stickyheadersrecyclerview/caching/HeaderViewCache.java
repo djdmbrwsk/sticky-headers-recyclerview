@@ -3,11 +3,16 @@ package com.timehop.stickyheadersrecyclerview.caching;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter;
 import com.timehop.stickyheadersrecyclerview.util.OrientationProvider;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * An implementation of {@link HeaderProvider} that creates and caches header views
@@ -15,7 +20,8 @@ import com.timehop.stickyheadersrecyclerview.util.OrientationProvider;
 public class HeaderViewCache implements HeaderProvider {
 
   private final StickyRecyclerHeadersAdapter mAdapter;
-  private final LongSparseArray<View> mHeaderViews = new LongSparseArray<>();
+  private final LongSparseArray<RecyclerView.ViewHolder> mHeaderViewHolders = new LongSparseArray<>();
+  private final Stack<RecyclerView.ViewHolder> mScrappedHeaderViewHolders = new Stack<>();
   private final OrientationProvider mOrientationProvider;
 
   public HeaderViewCache(StickyRecyclerHeadersAdapter adapter,
@@ -28,12 +34,18 @@ public class HeaderViewCache implements HeaderProvider {
   public View getHeader(RecyclerView parent, int position) {
     long headerId = mAdapter.getHeaderId(position);
 
-    View header = mHeaderViews.get(headerId);
-    if (header == null) {
-      //TODO - recycle views
-      RecyclerView.ViewHolder viewHolder = mAdapter.onCreateHeaderViewHolder(parent);
-      mAdapter.onBindHeaderViewHolder(viewHolder, position);
-      header = viewHolder.itemView;
+    RecyclerView.ViewHolder headerViewHolder = mHeaderViewHolders.get(headerId);
+    if (headerViewHolder == null) {
+
+      // Use scrapped view holder/view if available (recycle)
+      if (mScrappedHeaderViewHolders.size() > 0) {
+        headerViewHolder = mScrappedHeaderViewHolders.pop();
+      } else {
+        headerViewHolder = mAdapter.onCreateHeaderViewHolder(parent);
+      }
+
+      mAdapter.onBindHeaderViewHolder(headerViewHolder, position);
+      View header = headerViewHolder.itemView;
       if (header.getLayoutParams() == null) {
         header.setLayoutParams(new ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -56,13 +68,36 @@ public class HeaderViewCache implements HeaderProvider {
           parent.getPaddingTop() + parent.getPaddingBottom(), header.getLayoutParams().height);
       header.measure(childWidth, childHeight);
       header.layout(0, 0, header.getMeasuredWidth(), header.getMeasuredHeight());
-      mHeaderViews.put(headerId, header);
+      mHeaderViewHolders.put(headerId, headerViewHolder);
     }
-    return header;
+    return headerViewHolder.itemView;
+  }
+
+  @Override
+  public void recycleHeaders(List<Integer> visiblePositions) {
+    // Get visible headers
+    List<Long> visibleHeaderIds = new ArrayList<Long>();
+    for (int i = 0; i < visiblePositions.size(); i++) {
+      long headerId = mAdapter.getHeaderId(visiblePositions.get(i));
+      if (!visibleHeaderIds.contains(headerId)) {
+        visibleHeaderIds.add(headerId);
+      }
+    }
+
+    // Scrap un-used view holders
+    for (int i = 0; i < mHeaderViewHolders.size(); i++) {
+      if (!visibleHeaderIds.contains(mHeaderViewHolders.keyAt(i))) {
+
+        mScrappedHeaderViewHolders.push(mHeaderViewHolders.valueAt(i));
+        mHeaderViewHolders.removeAt(i);
+
+      }
+    }
   }
 
   @Override
   public void invalidate() {
-    mHeaderViews.clear();
+    mHeaderViewHolders.clear();
+    mScrappedHeaderViewHolders.clear();
   }
 }
