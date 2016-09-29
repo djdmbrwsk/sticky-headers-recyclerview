@@ -110,7 +110,8 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
           continue;
       }
 
-      boolean hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(itemView, mOrientationProvider.getOrientation(parent), position);
+      int orientation = mOrientationProvider.getOrientation(parent);
+      boolean hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(itemView, orientation, position);
       if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
         View header = mHeaderProvider.getHeader(parent, position);
         //re-use existing Rect, if any.
@@ -121,6 +122,9 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
         }
         mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader);
         mRenderer.drawHeader(parent, canvas, header, headerOffset);
+
+        boolean isSticky = mHeaderPositionCalculator.isHeaderSticky(parent, itemView, header, orientation);
+        mAdapter.onDrawHeader(header, isSticky);
       }
     }
   }

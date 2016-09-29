@@ -90,6 +90,19 @@ public class HeaderPositionCalculator {
     return position == firstItemPosition || headerId != nextItemHeaderId;
   }
 
+  /**
+   * Determines if a header is currently sticky (ex. eligible for a shadow)
+   *
+   * @param recyclerView
+   * @param itemView given by the RecyclerView
+   * @param headerView
+   * @param orientation of the Recyclerview
+   * @return true if the header is sticky
+   */
+  public boolean isHeaderSticky(RecyclerView recyclerView, View itemView, View headerView, int orientation) {
+    return itemIsObscuredByHeader(recyclerView, itemView, headerView, orientation) && !isStickyHeaderBeingPushedOffscreen(recyclerView, headerView);
+  }
+
   private boolean indexOutOfBounds(int position) {
     return position < 0 || position >= mAdapter.getItemCount();
   }

@@ -2,6 +2,7 @@ package com.timehop.stickyheadersrecyclerview.sample;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -154,6 +155,15 @@ public class MainActivity extends AppCompatActivity {
       TextView textView = (TextView) holder.itemView;
       textView.setText(String.valueOf(getItem(position).charAt(0)));
       holder.itemView.setBackgroundColor(getRandomColor());
+    }
+
+    @Override
+    public void onDrawHeader(View header, boolean isSticky) {
+      if (isSticky) {
+        header.setBackgroundColor(Color.LTGRAY);
+      } else if (((ColorDrawable) header.getBackground()).getColor() == Color.LTGRAY) {
+        header.setBackgroundColor(getRandomColor());
+      }
     }
 
     private int getRandomColor() {
