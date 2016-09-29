@@ -3,6 +3,8 @@ package com.timehop.stickyheadersrecyclerview.caching;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import java.util.List;
+
 /**
  * Implemented by objects that provide header views for decoration
  */
@@ -16,6 +18,11 @@ public interface HeaderProvider {
    * @return a header view for the given position and list
    */
   public View getHeader(RecyclerView recyclerView, int position);
+
+  /**
+   * TODO: describe this functionality and its necessity
+   */
+  public void recycleHeaders(List<Integer> visiblePositions);
 
   /**
    * TODO: describe this functionality and its necessity

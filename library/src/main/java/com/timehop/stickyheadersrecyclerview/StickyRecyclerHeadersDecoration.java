@@ -14,6 +14,9 @@ import com.timehop.stickyheadersrecyclerview.rendering.HeaderRenderer;
 import com.timehop.stickyheadersrecyclerview.util.LinearLayoutOrientationProvider;
 import com.timehop.stickyheadersrecyclerview.util.OrientationProvider;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration {
 
   private final StickyRecyclerHeadersAdapter mAdapter;
@@ -24,6 +27,7 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
   private final HeaderPositionCalculator mHeaderPositionCalculator;
   private final HeaderRenderer mRenderer;
   private final DimensionCalculator mDimensionCalculator;
+  private final List<Integer> mVisiblePositions = new ArrayList<Integer>();
 
   /**
    * The following field is used as a buffer for internal calculations. Its sole purpose is to avoid
@@ -103,12 +107,14 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
       return;
     }
 
+    mVisiblePositions.clear();
     for (int i = 0; i < childCount; i++) {
       View itemView = parent.getChildAt(i);
       int position = parent.getChildAdapterPosition(itemView);
       if (position == RecyclerView.NO_POSITION) {
           continue;
       }
+      mVisiblePositions.add(position);
 
       int orientation = mOrientationProvider.getOrientation(parent);
       boolean hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(itemView, orientation, position);
@@ -127,6 +133,7 @@ public class StickyRecyclerHeadersDecoration extends RecyclerView.ItemDecoration
         mAdapter.onDrawHeader(header, isSticky);
       }
     }
+    mHeaderProvider.recycleHeaders(mVisiblePositions);
   }
 
   /**
